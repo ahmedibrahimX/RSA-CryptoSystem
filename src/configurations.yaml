@@ -1,0 +1,4 @@
+# note that all numbers will be floored as a precaution so inter your numbers as integer
+KEY_GENERATION:
+  KEY_LENGTH: 15
+  PRIME_MIN_LENGTH: 4
