@@ -12,7 +12,7 @@ class RSA:
         assert self.prime_min_length >= 2, "prime min length must be greater than or equal 2" 
         assert self.key_length > self.prime_min_length, "key length must be > prime min length" 
         self.prime_max_length = self.key_length - self.prime_min_length
-        assert self.prime_max_length >= self.prime_min_length, "min length must be less than or equal to half the key length" 
+        assert self.prime_max_length > self.prime_min_length, "min length must be less than half the key length" 
     
     def generate_key(self):
         smallest_prime = 2 ** (self.prime_min_length - 1)
@@ -23,7 +23,6 @@ class RSA:
             p, q = RSAUtils.get_random_p_q(self.key_length, smallest_prime, prime_candidates)
         else:    
             p, q = RSAUtils.get_p_q_from_user(self.key_length, smallest_prime, prime_candidates)
-        print(p, q)
         n = p * q
         phi = (p - 1) * (q - 1)
         coprime_candidates = RSAUtils.get_coprime_candidates(phi)
@@ -32,6 +31,9 @@ class RSA:
             e = RSAUtils.get_random_e(coprime_candidates)
         else:    
             e = RSAUtils.get_e_from_user(coprime_candidates)
-        print(p, q, n, e)
-        print(RSAUtils.get_gcd(phi, e))
+        print("p: ", p)
+        print("q: ", q)
+        assert(p != q)
+        print("n: ", n)
+        print("e: ", e)
         assert(math.gcd(phi, e) == 1)

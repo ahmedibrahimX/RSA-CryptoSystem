@@ -3,6 +3,7 @@ import math
 import numpy as np
 import random
 from progressbar import *
+import timeit
 
 class UserInputUtils:
     def get_prime_selection_mode(candidates, parameters):
@@ -27,14 +28,11 @@ class RSAUtils:
     def get_prime_candidates(key_length, prime_min, prime_max):
         middle_range_start = 2 ** (math.floor(key_length / 2) - 2)
         middle_range_end = (2 ** (math.ceil(key_length / 2) + 1)) - 1
-        middle_sample_size = min(20, (middle_range_end-middle_range_start+1))
-        first_and_third_sample_size = min(5, (middle_range_start-prime_min))
+        middle_sample_size = min(30, (middle_range_end-middle_range_start+1))
+        first_and_third_sample_size = min(10, (middle_range_start-prime_min))
         
-        print(middle_range_end, prime_max)
-
         if(middle_range_end > prime_max):
             # important for choosing value for q as p might be large enough to rule out all random choices of q
-            print(prime_max-prime_min+1)
             prime_candidates = RSAUtils.get_n_primes(prime_min, prime_max+1, min(20, (prime_max-prime_min+1)))
         else:
             first_sample = RSAUtils.get_n_primes(prime_min, middle_range_start-1, first_and_third_sample_size)
@@ -66,13 +64,18 @@ class RSAUtils:
                 break
             elif prime >= range_start:
                 primes.add(prime)
-
+        start = timeit.default_timer()
         while len(primes) < count:
             prime_candidate = random.randrange(range_start, range_end+1)
             is_probable_prime = RSAUtils.is_probable_prime(range_start, first_primes_list, prime_candidate)
             if is_probable_prime and RSAUtils.is_miller_rabin_strong_prime(prime_candidate): 
                 primes.add(prime_candidate)
-                pbar.update(len(primes))
+                if timeit.default_timer() - start > 10:
+                    pbar.update(count)
+                    break
+                else:
+                    pbar.update(len(primes))
+
         pbar.finish()
         return list(primes)
 
@@ -111,20 +114,24 @@ class RSAUtils:
 
 
     def get_p_q_from_user(key_length, smallest_prime, prime_candidates):
-        p =  UserInputUtils.get_value_from_user("p", prime_candidates[prime_candidates >= smallest_prime].tolist())
+        p =  UserInputUtils.get_value_from_user("p", prime_candidates)
         q_max = RSAUtils.get_2nd_prime_max(key_length, prime_candidates, p)
-        if (prime_candidates[(prime_candidates >= smallest_prime) & (prime_candidates <= q_max)].size == 0):
+        q_candidates = []
+        for candidate in prime_candidates:
+            if (candidate != p) and (candidate >= smallest_prime) and (candidate <= q_max):
+                q_candidates.append(candidate)
+        if len(q_candidates) == 0 :
             print("regenerating")
-            prime_candidates = RSAUtils.get_prime_candidates(key_length, smallest_prime, q_max)
-        q =  UserInputUtils.get_value_from_user("q", prime_candidates[(prime_candidates >= smallest_prime) & (prime_candidates <= q_max)].tolist())
+            q_candidates = RSAUtils.get_prime_candidates(key_length, smallest_prime, q_max)
+        q =  UserInputUtils.get_value_from_user("q", q_candidates)
         return p,q
     
     def get_2nd_prime_max(key_length, prime_candidates, p):
         assert(isinstance(key_length, int))
         assert(isinstance(p, int))
-        q_max = (2 ** (key_length - p)) - 1
+        q_max = (2 ** (key_length - p.bit_length())) - 1
         for max_candidate in prime_candidates:
-            if max_candidate > q_max and (max_candidate * p) <= (2**key_length)-1:
+            if max_candidate > q_max and (max_candidate * p).bit_length() <= key_length.bit_length():
                 q_max = max_candidate
             else:
                 break
@@ -140,7 +147,7 @@ class RSAUtils:
         q_max = RSAUtils.get_2nd_prime_max(key_length, prime_candidates, p)
         q_candidates = []
         for candidate in prime_candidates:
-            if (candidate >= q_min) and (candidate <= q_max):
+            if (candidate != p) and (candidate >= q_min) and (candidate <= q_max):
                 q_candidates.append(candidate)
         if len(q_candidates) == 0 :
             q_candidates = RSAUtils.get_prime_candidates(key_length, smallest_prime, q_max)
@@ -154,7 +161,6 @@ class RSAUtils:
         while len(coprimes) < 20:
             candidate = int(random.randrange(2, min(18446744073709551616, phi)))
             if RSAUtils.get_gcd(phi, candidate) == 1:
-                print("candidate: ", candidate)
                 coprimes.add(candidate)
         return list(coprimes)
     
@@ -174,5 +180,4 @@ class RSAUtils:
     
     def get_random_e(coprime_candidates):
         rand_idx = int(random.random() * len(coprime_candidates))
-        choice = coprime_candidates[rand_idx]
-        return choice
+        return coprime_candidates[rand_idx]
