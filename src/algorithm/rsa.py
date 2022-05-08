@@ -20,7 +20,7 @@ class RSA:
         prime_candidates = RSAUtils.get_prime_candidates(self.key_length, smallest_prime, p_max)
         method = UserInputUtils.get_prime_selection_mode(prime_candidates, "p & q")
         if method == "Randomly":
-            p, q = RSAUtils.get_random_p_q(self.key_length, prime_candidates)
+            p, q = RSAUtils.get_random_p_q(self.key_length, smallest_prime, prime_candidates)
         else:    
             p, q = RSAUtils.get_p_q_from_user(self.key_length, smallest_prime, prime_candidates)
         print(p, q)
@@ -33,5 +33,5 @@ class RSA:
         else:    
             e = RSAUtils.get_e_from_user(coprime_candidates)
         print(p, q, n, e)
-        print(RSAUtils.get_gcd(e, phi))
-        assert(math.gcd(e, phi) == 1)
+        print(RSAUtils.get_gcd(phi, e))
+        assert(math.gcd(phi, e) == 1)
