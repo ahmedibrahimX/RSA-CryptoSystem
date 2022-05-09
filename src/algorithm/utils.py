@@ -6,10 +6,10 @@ from progressbar import *
 import timeit
 
 class UserInputUtils:
-    def get_selection_mode(candidates, parameters):
+    def get_selection_mode(parameters):
         question = [
             inquirer.List('mode',
-                        message="There are " + str(np.asarray(candidates).size) + " candidates for " + parameters + " how do you want it/them to be choosen?",
+                        message="There are candidates for " + parameters + " how do you want it/them to be choosen?",
                         choices=['Manually by you', 'Randomly'],
                     ),
         ]
@@ -130,15 +130,6 @@ class RSAUtils:
                 in_list = True
         return q_max
     
-    def get_coprime_candidates(phi):
-        assert(isinstance(phi, int))
-        coprimes = set()
-        while len(coprimes) < 20:
-            candidate = int(random.randrange(2, min(18446744073709551616, phi)))
-            if RSAUtils.get_gcd(phi, candidate) == 1:
-                coprimes.add(candidate)
-        return list(coprimes)
-    
     def get_gcd(n1, n2):
         n = n1 | n2
         if n == n1 or n == n2:
@@ -152,11 +143,26 @@ class RSAUtils:
             x = y
             y = r
     
-    def get_random_e(coprime_candidates):
-        rand_idx = int(random.random() * len(coprime_candidates))
-        return coprime_candidates[rand_idx]
+    def get_random_e(e_max_length, phi):
+        return RSAUtils.get_coprime_candidates(int(e_max_length), int(phi), 1)[0]
     
-    
+    def get_coprime_candidates(e_max_length, phi, count):
+        assert(isinstance(phi, int))
+        widgets = ['Generating e candidates: ', Percentage(), ' ', Bar(marker='0',left='[',right=']'),
+           ' ', ETA(), ' ', FileTransferSpeed(unit="private key candidate")]
+        pbar = ProgressBar(widgets=widgets, maxval=count)
+        pbar.start()
+        coprimes = set()
+        range_max = (2**e_max_length)-1
+        while len(coprimes) < count:
+            candidate = int(random.randrange(2, min(range_max, phi)))
+            if RSAUtils.get_gcd(phi, candidate) == 1:
+                coprimes.add(candidate)
+                pbar.update(len(coprimes))
+        pbar.finish()
+        return list(coprimes)
+
+
     first_primes_list = np.asarray([2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67,
             71, 73, 79, 83, 89, 97, 101, 103, 107, 109, 113, 127, 131, 137, 139, 149, 151, 157, 163, 167, 173, 179,
             181, 191, 193, 197, 199, 211, 223, 227, 229, 233, 239, 241, 251, 257,263, 269, 271, 277, 281, 283, 293,

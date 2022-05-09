@@ -1,7 +1,8 @@
 # note that all numbers will be floored as a precaution so inter your numbers as integer
 KEY_GENERATION:
-  KEY_LENGTH: 2048
+  KEY_LENGTH: 1024
   PRIME_MIN_LENGTH: 4
   FIRST_SAMPLE_SIZE: 5
   MIDDLE_SAMPLE_SIZE: 20
   THIRD_SAMPLE_SIZE: 5
+  E_MAX_LENGTH: 64
