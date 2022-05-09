@@ -21,9 +21,9 @@ class RSA:
         assert self.key_length > self.prime_min_length, "key length must be > prime min length" 
         self.prime_max_length = self.key_length - self.prime_min_length
         assert self.prime_max_length > self.prime_min_length, "min length must be less than half the key length"
-        self.first_sample_size = math.floor(config["KEY_GENERATION"]["FIRST_SAMPLE_SIZE"])
-        self.middle_sample_size = math.floor(config["KEY_GENERATION"]["MIDDLE_SAMPLE_SIZE"])
-        self.third_sample_size = math.floor(config["KEY_GENERATION"]["THIRD_SAMPLE_SIZE"])
+        self.first_sample_max_size = math.floor(config["KEY_GENERATION"]["FIRST_SAMPLE_MAX_SIZE"])
+        self.middle_sample_max_size = math.floor(config["KEY_GENERATION"]["MIDDLE_SAMPLE_MAX_SIZE"])
+        self.third_sample_max_size = math.floor(config["KEY_GENERATION"]["THIRD_SAMPLE_MAX_SIZE"])
         self.e_max_length = math.floor(config["KEY_GENERATION"]["E_MAX_LENGTH"])
         self.e_options_max_count = math.floor(config["KEY_GENERATION"]["E_OPTIONS_MAX_COUNT"])
         self.params = None
@@ -36,8 +36,8 @@ class RSA:
         if method == "Randomly":
             p, q = RSAUtils.get_random_p_q(self.key_length)
         else:
-            prime_candidates = RSAUtils.get_prime_candidates(self.key_length, smallest_prime, p_max, self.first_sample_size, self.middle_sample_size, self.third_sample_size)
-            p, q = RSAUtils.get_p_q_from_user(self.key_length, smallest_prime, prime_candidates, self.first_sample_size, self.middle_sample_size, self.third_sample_size)
+            prime_candidates = RSAUtils.get_prime_candidates(self.key_length, smallest_prime, p_max, self.first_sample_max_size, self.middle_sample_max_size, self.third_sample_max_size)
+            p, q = RSAUtils.get_p_q_from_user(self.key_length, smallest_prime, prime_candidates, self.first_sample_max_size, self.middle_sample_max_size, self.third_sample_max_size)
         assert(p != q)
         n = p * q
         phi = (p - 1) * (q - 1)
