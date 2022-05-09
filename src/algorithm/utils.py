@@ -5,7 +5,7 @@ import random
 from progressbar import *
 import timeit
 
-class UserInputUtils:
+class UserInterfaceUtils:
     def get_selection_mode(parameters):
         question = [
             inquirer.List('mode',
@@ -23,6 +23,22 @@ class UserInputUtils:
                     ),
             ]
         return inquirer.prompt(options)["parameter"]
+    
+    def display_starting_message(key_length):
+        print("="*50 + "\nGenerating RSA keys for n with length of: " + str(key_length) + "\n" + "="*50)
+    
+    def display_generated_parameters(p,q,n,e, d):
+        UserInterfaceUtils.display_horizontal_line()
+        print("p: ", p, "\n")
+        print("q: ", q, "\n")
+        print("n: ", n, "\n")
+        print("e: ", e, "\n")
+        print("d: ", d)
+        UserInterfaceUtils.display_horizontal_line()
+
+
+    def display_horizontal_line():
+        print("="*50)
 
 class RSAUtils:
     def get_random_p_q(key_length):
@@ -105,7 +121,7 @@ class RSAUtils:
         return prime_candidates
 
     def get_p_q_from_user(key_length, smallest_prime, prime_candidates, first_sample_size, middle_sample_size, third_sample_size):
-        p =  UserInputUtils.get_value_from_user("p", prime_candidates)
+        p =  UserInterfaceUtils.get_value_from_user("p", prime_candidates)
         q_max = RSAUtils.get_2nd_prime_max(key_length, prime_candidates, p)
         q_candidates = []
         q_candidates = np.asarray(prime_candidates, dtype=object)
@@ -114,7 +130,7 @@ class RSAUtils:
         if len(q_candidates) == 0 :
             print("regenerating")
             q_candidates = RSAUtils.get_prime_candidates(key_length, smallest_prime, q_max, first_sample_size, middle_sample_size, third_sample_size)
-        q =  UserInputUtils.get_value_from_user("q", q_candidates)
+        q =  UserInterfaceUtils.get_value_from_user("q", q_candidates)
         return p,q
     
     def get_2nd_prime_max(key_length, prime_candidates, p):
@@ -161,7 +177,22 @@ class RSAUtils:
                 pbar.update(len(coprimes))
         pbar.finish()
         return list(coprimes)
+    
+    def get_e_from_user(e_max_length, phi):
+        candidates = RSAUtils.get_coprime_candidates(int(e_max_length), int(phi), 5)
+        return UserInterfaceUtils.get_value_from_user("e", candidates)
 
+    def get_inverse(a, m):
+        g, x, _ = RSAUtils.extended_euclidean(a, m)
+        if g != 1:
+           return None
+        return x%m
+    
+    def extended_euclidean(a, b): 
+        if a == 0:
+            return (b, 0, 1)
+        g, y, x = RSAUtils.extended_euclidean(b%a,a)
+        return g, x - (b//a) * y, y
 
     first_primes_list = np.asarray([2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67,
             71, 73, 79, 83, 89, 97, 101, 103, 107, 109, 113, 127, 131, 137, 139, 149, 151, 157, 163, 167, 173, 179,

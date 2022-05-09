@@ -1,7 +1,15 @@
 import yaml
-import numpy as np
 import math
-from algorithm.utils import RSAUtils, UserInputUtils
+from dataclasses import dataclass
+from algorithm.utils import RSAUtils, UserInterfaceUtils
+
+@dataclass
+class Params:
+    p: int
+    q: int
+    n: int
+    e: int
+    d: int
 
 class RSA:
     def __init__(self):
@@ -17,12 +25,13 @@ class RSA:
         self.middle_sample_size = math.floor(config["KEY_GENERATION"]["MIDDLE_SAMPLE_SIZE"])
         self.third_sample_size = math.floor(config["KEY_GENERATION"]["THIRD_SAMPLE_SIZE"])
         self.e_max_length = math.floor(config["KEY_GENERATION"]["E_MAX_LENGTH"])
-        print("="*50 + "\nGenerating RSA keys for n with length of: " + str(self.key_length) + "\n" + "="*50)
+        self.params = None
+        UserInterfaceUtils.display_starting_message(self.key_length)
     
     def generate_key(self):
         smallest_prime = 2 ** (self.prime_min_length - 1)
         p_max = (2 ** self.prime_max_length) - 1
-        method = UserInputUtils.get_selection_mode("p & q")
+        method = UserInterfaceUtils.get_selection_mode("p & q")
         if method == "Randomly":
             p, q = RSAUtils.get_random_p_q(self.key_length)
         else:
@@ -31,16 +40,14 @@ class RSA:
         assert(p != q)
         n = p * q
         phi = (p - 1) * (q - 1)
-        print("="*50)
-        method = UserInputUtils.get_selection_mode("e")
+        UserInterfaceUtils.display_horizontal_line()
+        method = UserInterfaceUtils.get_selection_mode("e")
         if method == "Randomly":
             e = RSAUtils.get_random_e(self.e_max_length, phi)
         else:    
-            e = RSAUtils.get_e_from_user()
+            e = RSAUtils.get_e_from_user(self.e_max_length, phi)
         assert(math.gcd(phi, e) == 1)
-        print("="*50)
-        print("p: ", p, "\n")
-        print("q: ", q, "\n")
-        print("n: ", n, "\n")
-        print("e: ", e)
-        print("="*50)
+        d = RSAUtils.get_inverse(e, phi)
+        assert((d != None) and ((d*e) % phi == 1))
+        self.params = Params(p, q, n, e, d)
+        UserInterfaceUtils.display_generated_parameters(p,q,n,e,d)
