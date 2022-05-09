@@ -25,6 +25,7 @@ class RSA:
         self.middle_sample_size = math.floor(config["KEY_GENERATION"]["MIDDLE_SAMPLE_SIZE"])
         self.third_sample_size = math.floor(config["KEY_GENERATION"]["THIRD_SAMPLE_SIZE"])
         self.e_max_length = math.floor(config["KEY_GENERATION"]["E_MAX_LENGTH"])
+        self.e_options_max_count = math.floor(config["KEY_GENERATION"]["E_OPTIONS_MAX_COUNT"])
         self.params = None
         UserInterfaceUtils.display_starting_message(self.key_length)
     
@@ -45,7 +46,7 @@ class RSA:
         if method == "Randomly":
             e = RSAUtils.get_random_e(self.e_max_length, phi)
         else:    
-            e = RSAUtils.get_e_from_user(self.e_max_length, phi)
+            e = RSAUtils.get_e_from_user(self.e_max_length, phi, self.e_options_max_count)
         assert(math.gcd(phi, e) == 1)
         d = RSAUtils.get_inverse(e, phi)
         assert((d != None) and ((d*e) % phi == 1))

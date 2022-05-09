@@ -178,8 +178,8 @@ class RSAUtils:
         pbar.finish()
         return list(coprimes)
     
-    def get_e_from_user(e_max_length, phi):
-        candidates = RSAUtils.get_coprime_candidates(int(e_max_length), int(phi), 5)
+    def get_e_from_user(e_max_length, phi, e_options_max_count):
+        candidates = RSAUtils.get_coprime_candidates(int(e_max_length), int(phi), e_options_max_count)
         return UserInterfaceUtils.get_value_from_user("e", candidates)
 
     def get_inverse(a, m):
