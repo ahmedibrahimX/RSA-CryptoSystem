@@ -24,6 +24,21 @@ class UserInterfaceUtils:
             ]
         return inquirer.prompt(options)["parameter"]
     
+    def get_message_from_user():
+        question = [
+                inquirer.Text('message', message='Enter a message to encrypt and send to receiver (or enter an empty message to exit)')
+            ]
+        return str(inquirer.prompt(question)['message'])
+    
+    def display_termination_message(communication_side):
+        print(communication_side + " Terminated")
+    
+    def display_waiting_message(communication_side):
+        if communication_side == "Sender":
+            print("Sender listening for connections")
+        elif communication_side == "Receiver":
+            print("Receiver is waiting for key")
+    
     def display_starting_message(key_length):
         print("="*50 + "\nGenerating RSA keys for n with length of: " + str(key_length) + "\n" + "="*50)
     

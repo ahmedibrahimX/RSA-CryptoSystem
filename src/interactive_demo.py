@@ -1,6 +1,7 @@
 import sys, getopt
 import socket
 from algorithm.rsa import RSA
+from algorithm.utils import UserInterfaceUtils
 
 IS_INTERACTIVE = True
 HOST = "127.0.0.1"
@@ -23,22 +24,42 @@ def main(argv):
             server=socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             server.bind((HOST, PORT))
             server.listen(5)
-            print("sender listening for connections")
+            UserInterfaceUtils.display_waiting_message("Sender")
             connection, _ = server.accept()
             print(connection)
             rsa = RSA()
             rsa.generate_key(IS_INTERACTIVE)
-            connection.send(str(rsa.params.n).encode('utf8'))
-            connection.send(str(rsa.params.d).encode('utf8'))
+            connection.send(str(rsa.params.n).encode("utf8"))
+            connection.send(str(rsa.params.d).encode("utf8"))
+            while True:
+                message = UserInterfaceUtils.get_message_from_user()
+                connection.send(str(len(message)).encode("utf8"))
+                for character in range(0, len(message)):
+                    encrypted_chars = pow(ord(message[character]), rsa.params.e, rsa.params.n)
+                    connection.send((str(encrypted_chars) + "\n").encode("utf8"))
+                if message == "":
+                    connection.send(str(0).encode("utf8"))
+                    UserInterfaceUtils.display_termination_message("Sender")
+                    break
         elif opts[0][1] == "receiver":
             client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             client.connect((HOST, PORT))
-            print("receiver is waiting for key")
-            n = int(client.recv(BUFFER_SIZE).decode('utf8'))
-            d = int(client.recv(BUFFER_SIZE).decode('utf8'))
-            print("d: " + str(d))
-            print("=" * 60)
-            print("n: " + str(n))
+            UserInterfaceUtils.display_waiting_message("Receiver")
+            n = int(client.recv(BUFFER_SIZE).decode("utf8"))
+            d = int(client.recv(BUFFER_SIZE).decode("utf8"))
+            while True:
+                message_length = int(client.recv(BUFFER_SIZE).decode("utf8"))
+                if message_length == 0:
+                    UserInterfaceUtils.display_termination_message("Receiver")
+                    break
+                message = ""
+                while message_length != 0:
+                    encrypted_chars = client.recv(BUFFER_SIZE).decode("utf8").split("\n")[0:-1]
+                    for encrypted_char in encrypted_chars:
+                        decrypted_char = chr(pow(int(encrypted_char), d, n))
+                        message += decrypted_char
+                        message_length -= 1
+                print(message)
         else:
             print_help_message()
 
