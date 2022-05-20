@@ -29,10 +29,10 @@ class RSA:
         self.params = None
         UserInterfaceUtils.display_starting_message(self.key_length)
     
-    def generate_key(self):
+    def generate_key(self, isInteractive: bool):
         smallest_prime = 2 ** (self.prime_min_length - 1)
         p_max = (2 ** self.prime_max_length) - 1
-        method = UserInterfaceUtils.get_selection_mode("p & q")
+        method = "Randomly" if not isInteractive else UserInterfaceUtils.get_selection_mode("p & q")
         if method == "Randomly":
             p, q = RSAUtils.get_random_p_q(self.key_length)
         else:
@@ -42,7 +42,7 @@ class RSA:
         n = p * q
         phi = (p - 1) * (q - 1)
         UserInterfaceUtils.display_horizontal_line()
-        method = UserInterfaceUtils.get_selection_mode("e")
+        method = "Randomly" if not isInteractive else UserInterfaceUtils.get_selection_mode("e")
         if method == "Randomly":
             e = RSAUtils.get_random_e(self.e_max_length, phi)
         else:    
