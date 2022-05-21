@@ -10,6 +10,7 @@ IS_NOT_INTERACTIVE = False
 KEY_CONFIG = 0
 PRIME_CONGFIG=1
 MSG_CONFIG=2
+IS_STATISTICS_MODE = False
 
 def generate_random_message(length_in_bits):
     message = ""
@@ -107,7 +108,7 @@ def main():
             message = generate_random_message(configs[MSG_CONFIG])
             
             encryption_start = datetime.datetime.now()
-            RSA.encrypt_message(message, rsa.params.e, rsa.params.n)
+            RSA.send_encrypted_message_blocks(None, message, rsa.params.e, rsa.params.n, configs[KEY_CONFIG], IS_STATISTICS_MODE)
             encryption_finish = datetime.datetime.now()
             
             key_generation_time_avg[test_case_num] = (key_generation_finish - key_generation_start).total_seconds() / float(iterations_count)

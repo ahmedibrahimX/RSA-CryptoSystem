@@ -1,6 +1,8 @@
-from numpy import character
+from rsa import encrypt
 import yaml
 import math
+import socket
+import sys
 from dataclasses import dataclass
 from algorithm.utils import RSAUtils, UserInterfaceUtils
 
@@ -54,14 +56,34 @@ class RSA:
         self.params = Params(p, q, n, e, d)
         UserInterfaceUtils.display_generated_parameters(p,q,n,e,d)
     
-    def encrypt_character(character:str, e, n):
-        return pow(ord(chr(character)), e, n)
+    def encrypt_block(block:int, e: int, n: int):
+        return pow(block, e, n)
+
+    def send_encrypted_message_blocks(connection: socket, message: str, e, n, key_length, is_communication_mode):
+        block = 0
+        block_size = 0
+        for index in range(len(message)+1):
+            if block_size + 8 >= key_length or index >= len(message):
+                encrypted_block = RSA.encrypt_block(block, e, n)
+                if is_communication_mode: connection.send((str(encrypted_block) + "\t" + str(block_size) + "\n").encode("utf8"))
+                block = 0
+                block_size = 0
+            
+            if index < len(message):
+                character = message[index]
+                block = (block << 8) + ord(character)
+                block_size += 8
     
-    def encrypt_message(message: str, e, n):
-        encrypted_message = ""
-        for character in range(0, len(message)):
-            encrypted_message =+ RSA.encrypt_character(character, e, n)
-        return encrypted_message
-    
-    def decrypt_character(character_value:int, d, n):
-        return chr(pow(character_value, d, n))
+    def decrypt_block(block: int, d: int, n: int):
+        return pow(block, d, n)
+
+    def decrypt_message_block(block:int, block_size:int, d, n):
+        num_finished_chars = 0
+        original_block = ""
+        decrypted_characters = RSA.decrypt_block(block, d, n)
+        while num_finished_chars < block_size:
+            character = chr(decrypted_characters & 0xFF)
+            original_block = character + original_block
+            decrypted_characters = decrypted_characters >> 8
+            num_finished_chars += 8
+        return original_block

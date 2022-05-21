@@ -1,28 +1,30 @@
+from email import message
 import sys, getopt
 import socket
 from algorithm.rsa import RSA
 from algorithm.utils import UserInterfaceUtils
 
 IS_INTERACTIVE = True
+IS_COMMUNICATION_MODE = True
 HOST = "127.0.0.1"
 PORT = 8000
-BUFFER_SIZE = 5000
+BUFFER_SIZE = 50000
 
 def print_help_message():
     print("use one of the following options:\n\t-h (for help)\n\t-t sender (to send)\n\t-t receiver (to receive)")
     sys.exit(2)
 
-def send_encrypted_messages(connection, rsa):
+
+def send_encrypted_messages(connection: socket, rsa:RSA):
     while True:
         message = UserInterfaceUtils.get_message_from_user()
-        connection.send(str(len(message)).encode("utf8"))
-        for character in range(0, len(message)):
-            encrypted_chars = RSA.encrypt_character(message[character], rsa.params.e, rsa.params.n)
-            connection.send((str(encrypted_chars) + "\n").encode("utf8"))
         if message == "":
             connection.send(str(0).encode("utf8"))
             UserInterfaceUtils.display_termination_message("Sender")
             break
+        else:
+            connection.send(str(len(message)).encode("utf8"))
+        RSA.send_encrypted_message_blocks(connection, message, rsa.params.e, rsa.params.n, rsa.key_length, IS_COMMUNICATION_MODE)
 
 def decrypt_received_messages(client, n, d):
     while True:
@@ -32,11 +34,13 @@ def decrypt_received_messages(client, n, d):
             break
         message = ""
         while message_length != 0:
-            encrypted_chars = client.recv(BUFFER_SIZE).decode("utf8").split("\n")[0:-1]
-            for encrypted_char in encrypted_chars:
-                decrypted_char = RSA.decrypt_character(int(encrypted_char), d, n)
-                message += decrypted_char
-                message_length -= 1
+            block_tuples = client.recv(BUFFER_SIZE).decode("utf8").split("\n")[0:-1]
+            for block_tuple in block_tuples:
+                block = int(block_tuple.split("\t")[0])
+                block_size = int(block_tuple.split("\t")[1])
+                decrypted_block = RSA.decrypt_message_block(block, block_size, d, n)
+                message += decrypted_block
+                message_length -= (block_size/8)
         print(message)
 
 def create_server_socket():
