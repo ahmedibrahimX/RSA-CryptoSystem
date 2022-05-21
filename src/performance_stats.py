@@ -83,9 +83,9 @@ def plot_total_rsa_stats(total_rsa_time_avg, key_lens, msg_sizes):
     plt.savefig('src/stats/total_rsa_stats.png', bbox_inches='tight')
     plt.show()
 
-key_len__prime_min_len__msg_len = [(32, 8, 20), (40, 10, 20), (56, 15, 20),
-    (64, 30, 40), (128, 60, 40), (256, 120, 40), 
-    (512, 250, 300), (1024, 500, 300), (2048, 1000, 300)]
+key_len__prime_min_len__msg_len = [(32, 8, 11576), (40, 10, 11576), (56, 15, 11576),
+    (64, 30, 11576), (128, 60, 11576), (256, 120, 11576), 
+    (512, 250, 11576), (1024, 500, 11576), (2048, 1000, 11576)]
 
 def main():
     key_generation_time_avg = [0,0,0,0,0,0,0,0,0]

@@ -64,7 +64,8 @@ class RSAUtils:
             second_candidates = RSAUtils.get_n_primes(start, end+1, 5)
             for candidate in second_candidates:
                 if((prime_candidates[0] != candidate) and ((prime_candidates[0]*candidate).bit_length() <= key_length)):
-                    prime_candidates[1] = candidate
+                    if(len(prime_candidates) >= 2): prime_candidates[1] = candidate
+                    elif(len(prime_candidates) == 1): prime_candidates.append(candidate)
         return prime_candidates[0], prime_candidates[1]
     
     def get_n_primes(range_start, range_end, count):
