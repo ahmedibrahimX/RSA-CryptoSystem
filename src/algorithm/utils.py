@@ -198,16 +198,17 @@ class RSAUtils:
         return UserInterfaceUtils.get_value_from_user("e", candidates)
 
     def get_inverse(a, m):
-        g, x, _ = RSAUtils.extended_euclidean(a, m)
-        if g != 1:
+        gcd, x, _ = RSAUtils.extended_euclidean(a, m)
+        if gcd != 1:
            return None
         return x%m
     
     def extended_euclidean(a, b): 
         if a == 0:
             return (b, 0, 1)
-        g, y, x = RSAUtils.extended_euclidean(b%a,a)
-        return g, x - (b//a) * y, y
+        gcd, y, x = RSAUtils.extended_euclidean(b%a,a)
+        # a.x + b.y = gcd(a, b)
+        return gcd, x - (b//a) * y, y
 
     first_primes_list = np.asarray([2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67,
             71, 73, 79, 83, 89, 97, 101, 103, 107, 109, 113, 127, 131, 137, 139, 149, 151, 157, 163, 167, 173, 179,
