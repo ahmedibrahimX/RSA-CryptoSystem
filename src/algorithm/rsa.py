@@ -1,3 +1,4 @@
+from numpy import character
 import yaml
 import math
 from dataclasses import dataclass
@@ -52,3 +53,15 @@ class RSA:
         assert((d != None) and ((d*e) % phi == 1))
         self.params = Params(p, q, n, e, d)
         UserInterfaceUtils.display_generated_parameters(p,q,n,e,d)
+    
+    def encrypt_character(character:str, e, n):
+        return pow(ord(chr(character)), e, n)
+    
+    def encrypt_message(message: str, e, n):
+        encrypted_message = ""
+        for character in range(0, len(message)):
+            encrypted_message =+ RSA.encrypt_character(character, e, n)
+        return encrypted_message
+    
+    def decrypt_character(character_value:int, d, n):
+        return chr(pow(character_value, d, n))

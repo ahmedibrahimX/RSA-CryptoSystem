@@ -12,6 +12,18 @@ def print_help_message():
     print("use one of the following options:\n\t-h (for help)\n\t-t sender (to send)\n\t-t receiver (to receive)")
     sys.exit(2)
 
+def send_encrypted_messages(connection, rsa):
+    while True:
+        message = UserInterfaceUtils.get_message_from_user()
+        connection.send(str(len(message)).encode("utf8"))
+        for character in range(0, len(message)):
+            encrypted_chars = RSA.encrypt_character(message[character], rsa.params.e, rsa.params.n)
+            connection.send((str(encrypted_chars) + "\n").encode("utf8"))
+        if message == "":
+            connection.send(str(0).encode("utf8"))
+            UserInterfaceUtils.display_termination_message("Sender")
+            break
+
 def decrypt_received_messages(client, n, d):
     while True:
         message_length = int(client.recv(BUFFER_SIZE).decode("utf8"))
@@ -22,22 +34,10 @@ def decrypt_received_messages(client, n, d):
         while message_length != 0:
             encrypted_chars = client.recv(BUFFER_SIZE).decode("utf8").split("\n")[0:-1]
             for encrypted_char in encrypted_chars:
-                decrypted_char = chr(pow(int(encrypted_char), d, n))
+                decrypted_char = RSA.decrypt_character(int(encrypted_char), d, n)
                 message += decrypted_char
                 message_length -= 1
         print(message)
-
-def send_encrypted_messages(connection, rsa):
-    while True:
-        message = UserInterfaceUtils.get_message_from_user()
-        connection.send(str(len(message)).encode("utf8"))
-        for character in range(0, len(message)):
-            encrypted_chars = pow(ord(message[character]), rsa.params.e, rsa.params.n)
-            connection.send((str(encrypted_chars) + "\n").encode("utf8"))
-        if message == "":
-            connection.send(str(0).encode("utf8"))
-            UserInterfaceUtils.display_termination_message("Sender")
-            break
 
 def create_server_socket():
     server=socket.socket(socket.AF_INET, socket.SOCK_STREAM)
