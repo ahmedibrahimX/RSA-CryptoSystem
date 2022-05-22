@@ -63,10 +63,13 @@ class RSA:
     def send_encrypted_message_blocks(connection: socket, message: str, e, n, key_length, is_communication_mode):
         block = 0
         block_size = 0
+        block_tuples = []
         for index in range(len(message)+1):
             if block_size + 8 >= key_length or index >= len(message):
                 encrypted_block = RSA.encrypt_block(block, e, n)
-                if is_communication_mode: connection.send((str(encrypted_block) + "\t" + str(block_size) + "\n").encode("utf8"))
+                block_tuple = (str(encrypted_block) + "\t" + str(block_size) + "\n").encode("utf8")
+                block_tuples.append(block_tuple)
+                if is_communication_mode: connection.send(block_tuple)
                 block = 0
                 block_size = 0
             
@@ -74,6 +77,7 @@ class RSA:
                 character = message[index]
                 block = (block << 8) + ord(character)
                 block_size += 8
+        return block_tuples
     
     @staticmethod
     def decrypt_block(block: int, d: int, n: int):
