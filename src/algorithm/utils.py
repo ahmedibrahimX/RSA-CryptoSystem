@@ -6,6 +6,7 @@ from progressbar import *
 import timeit
 
 class UserInterfaceUtils:
+    @staticmethod
     def get_selection_mode(parameters):
         question = [
             inquirer.List('mode',
@@ -15,6 +16,7 @@ class UserInterfaceUtils:
         ]
         return inquirer.prompt(question)["mode"]
 
+    @staticmethod
     def get_value_from_user(parameter, parameter_space):
         options = [
                 inquirer.List("parameter",
@@ -24,24 +26,29 @@ class UserInterfaceUtils:
             ]
         return inquirer.prompt(options)["parameter"]
     
+    @staticmethod
     def get_message_from_user():
         question = [
                 inquirer.Text('message', message='Enter a message to encrypt and send to receiver (or enter an empty message to exit)')
             ]
         return str(inquirer.prompt(question)['message'])
     
+    @staticmethod
     def display_termination_message(communication_side):
         print(communication_side + " Terminated")
     
+    @staticmethod
     def display_waiting_message(communication_side):
         if communication_side == "Sender":
             print("Sender listening for connections")
         elif communication_side == "Receiver":
             print("Receiver is waiting for key")
     
+    @staticmethod
     def display_starting_message(key_length):
         print("="*50 + "\nGenerating RSA keys for n with length of: " + str(key_length) + "\n" + "="*50)
     
+    @staticmethod
     def display_generated_parameters(p,q,n,e, d):
         UserInterfaceUtils.display_horizontal_line()
         print("p: ", p, "\n")
@@ -51,11 +58,12 @@ class UserInterfaceUtils:
         print("d: ", d)
         UserInterfaceUtils.display_horizontal_line()
 
-
+    @staticmethod
     def display_horizontal_line():
         print("="*50)
 
 class RSAUtils:
+    @staticmethod
     def get_random_p_q(key_length):
         start = 2 ** (math.floor(key_length / 2) - 2)
         end = (2 ** (math.ceil(key_length / 2) + 1)) - 1
@@ -68,6 +76,7 @@ class RSAUtils:
                     elif(len(prime_candidates) == 1): prime_candidates.append(candidate)
         return prime_candidates[0], prime_candidates[1]
     
+    @staticmethod
     def get_n_primes(range_start, range_end, count):
         
         widgets = ['Generating primes: ', Percentage(), ' ', Bar(marker='0',left='[',right=']'),
@@ -80,7 +89,7 @@ class RSAUtils:
         start = timeit.default_timer()
         while len(primes) < count:
             prime_candidate = random.randrange((range_start|1), range_end+1, 2)
-            is_probably_a_prime = RSAUtils.is_probably_a_prime(range_start, prime_candidate)
+            is_probably_a_prime = RSAUtils.is_probably_a_prime(prime_candidate)
             if is_probably_a_prime and RSAUtils.is_miller_rabin_strong_prime(prime_candidate): 
                 primes.add(prime_candidate)
                 if timeit.default_timer() - start > 5:
@@ -91,11 +100,13 @@ class RSAUtils:
         pbar.finish()
         return list(primes)
 
-    def is_probably_a_prime(range_start, prime_candidate):
-        if(RSAUtils.first_primes_list[(prime_candidate % RSAUtils.first_primes_list == 0) & (RSAUtils.first_primes_list**2 <= prime_candidate)].size > 0):
+    @classmethod
+    def is_probably_a_prime(cls, prime_candidate):
+        if(cls.first_primes_list[(prime_candidate % RSAUtils.first_primes_list == 0) & (cls.first_primes_list**2 <= prime_candidate)].size > 0):
             return False
         return True
 
+    @staticmethod
     def is_miller_rabin_strong_prime(prime_candidate):
         num_factorization_trials = 0
         factor = prime_candidate-1
@@ -110,6 +121,7 @@ class RSAUtils:
                 return False
         return True
     
+    @staticmethod
     def is_factorized(prime_candidate, base, factor, num_factorization_trials):
             if pow(base, factor,
                 prime_candidate) == 1:
@@ -120,6 +132,7 @@ class RSAUtils:
                     return False
             return True
 
+    @staticmethod
     def get_prime_candidates(key_length, prime_min, prime_max, default_first_sample_size, default_middle_sample_size, default_third_sample_size):
         middle_range_start = 2 ** (math.floor(key_length / 2) - 2)
         middle_range_end = (2 ** (math.ceil(key_length / 2) + 1)) - 1
@@ -136,6 +149,7 @@ class RSAUtils:
             prime_candidates = first_sample + middle_sample + third_sample
         return prime_candidates
 
+    @staticmethod
     def get_p_q_from_user(key_length, smallest_prime, prime_candidates, first_sample_size, middle_sample_size, third_sample_size):
         p =  UserInterfaceUtils.get_value_from_user("p", prime_candidates)
         q_max = RSAUtils.get_2nd_prime_max(key_length, prime_candidates, p)
@@ -149,6 +163,7 @@ class RSAUtils:
         q =  UserInterfaceUtils.get_value_from_user("q", q_candidates)
         return p,q
     
+    @staticmethod
     def get_2nd_prime_max(key_length, prime_candidates, p):
         assert(isinstance(key_length, int))
         assert(isinstance(p, int))
@@ -162,6 +177,7 @@ class RSAUtils:
                 in_list = True
         return q_max
     
+    @staticmethod
     def get_gcd(n1, n2):
         n = n1 | n2
         if n == n1 or n == n2:
@@ -175,9 +191,11 @@ class RSAUtils:
             x = y
             y = r
     
+    @staticmethod
     def get_random_e(e_max_length, phi):
         return RSAUtils.get_coprime_candidates(int(e_max_length), int(phi), 1)[0]
     
+    @staticmethod
     def get_coprime_candidates(e_max_length, phi, count):
         assert(isinstance(phi, int))
         widgets = ['Generating e candidates: ', Percentage(), ' ', Bar(marker='0',left='[',right=']'),
@@ -194,22 +212,26 @@ class RSAUtils:
         pbar.finish()
         return list(coprimes)
     
+    @staticmethod
     def get_e_from_user(e_max_length, phi, e_options_max_count):
         candidates = RSAUtils.get_coprime_candidates(int(e_max_length), int(phi), e_options_max_count)
         return UserInterfaceUtils.get_value_from_user("e", candidates)
 
+    @staticmethod
     def get_inverse(a, m):
         gcd, x, _ = RSAUtils.extended_euclidean(a, m)
         if gcd != 1:
            return None
         return x%m
     
+    @staticmethod
     def extended_euclidean(a, b): 
         if a == 0:
             return (b, 0, 1)
         gcd, y, x = RSAUtils.extended_euclidean(b%a,a)
         # a.x + b.y = gcd(a, b)
         return gcd, x - (b//a) * y, y
+
 
     first_primes_list = np.asarray([2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67,
             71, 73, 79, 83, 89, 97, 101, 103, 107, 109, 113, 127, 131, 137, 139, 149, 151, 157, 163, 167, 173, 179,

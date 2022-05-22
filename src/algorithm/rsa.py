@@ -55,9 +55,11 @@ class RSA:
         self.params = Params(p, q, n, e, d)
         UserInterfaceUtils.display_generated_parameters(p,q,n,e,d)
     
+    @staticmethod
     def encrypt_block(block:int, e: int, n: int):
         return pow(block, e, n)
 
+    @staticmethod
     def send_encrypted_message_blocks(connection: socket, message: str, e, n, key_length, is_communication_mode):
         block = 0
         block_size = 0
@@ -73,9 +75,11 @@ class RSA:
                 block = (block << 8) + ord(character)
                 block_size += 8
     
+    @staticmethod
     def decrypt_block(block: int, d: int, n: int):
         return pow(block, d, n)
 
+    @staticmethod
     def decrypt_message_block(block:int, block_size:int, d, n):
         num_finished_chars = 0
         original_block = ""
