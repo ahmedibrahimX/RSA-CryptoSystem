@@ -45,7 +45,7 @@ def plot_key_gen_stats(key_generation_time_avg, key_lens):
     ax.set_title("Key Generation Stats")
     ax.set_xlabel("Key length in bits")
     ax.set_ylabel("Time in seconds")
-    plt.savefig(os.path.join(os.path.dirname(__file__), "..") + '/stats/key_generation_stats.png', bbox_inches='tight')
+    plt.savefig(os.path.join(os.path.dirname(__file__), "..") + '/stats/rsa_stats/key_generation_stats.png', bbox_inches='tight')
     plt.show()
 
 def annotate_msg_size(ax, size, x, y, point_index):
@@ -69,7 +69,7 @@ def plot_ecnryption_stats(encryption_time_avg, key_lens, msg_sizes):
     ax.add_artist(AnchoredText('annotations on points represent message sizes in bits', loc=2))
     for i in range(len(key_lens)):
         annotate_msg_size(ax, msg_sizes[i], key_lens[i], encryption_time_avg[i], i)
-    plt.savefig(os.path.join(os.path.dirname(__file__), "..") + '/stats/encryption_stats.png', bbox_inches='tight')
+    plt.savefig(os.path.join(os.path.dirname(__file__), "..") + '/stats/rsa_stats/encryption_stats.png', bbox_inches='tight')
     plt.show()
 
 def plot_total_rsa_stats(total_rsa_time_avg, key_lens, msg_sizes):
@@ -83,14 +83,13 @@ def plot_total_rsa_stats(total_rsa_time_avg, key_lens, msg_sizes):
     ax.add_artist(AnchoredText('annotations on points represent message sizes in bits', loc=2))
     for i in range(len(key_lens)):
         annotate_msg_size(ax, msg_sizes[i], key_lens[i], total_rsa_time_avg[i], i)
-    plt.savefig(os.path.join(os.path.dirname(__file__), "..") + '/stats/total_rsa_stats.png', bbox_inches='tight')
+    plt.savefig(os.path.join(os.path.dirname(__file__), "..") + '/stats/rsa_stats/total_rsa_stats.png', bbox_inches='tight')
     plt.show()
 
-key_len__prime_min_len__msg_len = [(32, 8, 20), (40, 10, 20), (56, 15, 20),
+def main():
+    key_len__prime_min_len__msg_len = [(32, 8, 20), (40, 10, 20), (56, 15, 20),
     (64, 30, 40), (128, 60, 40), (256, 120, 40), 
     (512, 250, 300), (1024, 500, 300), (2048, 1000, 300)]
-
-def main():
     key_generation_time_avg = [0,0,0,0,0,0,0,0,0]
     encryption_time_avg = [0,0,0,0,0,0,0,0,0]
     total_rsa_time_avg = [0,0,0,0,0,0,0,0,0]
@@ -114,9 +113,13 @@ def main():
             RSA.send_encrypted_message_blocks(None, message, rsa.params.e, rsa.params.n, configs[KEY_CONFIG], IS_STATISTICS_MODE)
             encryption_finish = datetime.datetime.now()
             
-            key_generation_time_avg[test_case_num] = (key_generation_finish - key_generation_start).total_seconds() / float(iterations_count)
-            encryption_time_avg[test_case_num] = (encryption_finish - encryption_start).total_seconds() / float(iterations_count)
-            total_rsa_time_avg[test_case_num] = key_generation_time_avg[test_case_num] + encryption_time_avg[test_case_num] / float(iterations_count)
+            key_generation_time = (key_generation_finish - key_generation_start).total_seconds()
+            key_generation_time_avg[test_case_num] += key_generation_time / float(iterations_count)
+
+            encryption_time = (encryption_finish - encryption_start).total_seconds()
+            encryption_time_avg[test_case_num] += encryption_time / float(iterations_count)
+            
+            total_rsa_time_avg[test_case_num] += (key_generation_time + encryption_time) / float(iterations_count)
             test_case_num += 1
     
     plot_key_gen_stats(key_generation_time_avg, key_lens)
