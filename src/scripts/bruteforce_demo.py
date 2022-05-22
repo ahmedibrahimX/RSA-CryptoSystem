@@ -22,7 +22,6 @@ def search_for_prime_factor(start, end, n, factors_found, p_q):
     widgets = ['Bruteforcing factors: ', Percentage(), ' ', Bar(marker='0',left='[',right=']'),
         ' ', ETA(), ' ', FileTransferSpeed(unit="key")]
     pbar = ProgressBar(widgets=widgets, maxval=end-start+1)
-    sleep(0.005)
     progress = 0
     pbar.start()
     p = start
