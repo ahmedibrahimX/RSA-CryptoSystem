@@ -1,9 +1,12 @@
+import sys, os
 import random
 import yaml
 import datetime
 from string import ascii_letters, digits
 import matplotlib.pyplot as plt
 from matplotlib.offsetbox import AnchoredText
+
+sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 from algorithm.rsa import RSA
 
 IS_NOT_INTERACTIVE = False
@@ -19,15 +22,15 @@ def generate_random_message(length_in_bits):
     return message
 
 def set_configurations(key_length, prime_min_length):
-    with open('src/configurations.yaml') as f:
+    with open(os.path.join(os.path.dirname(__file__), "../configurations.yaml")) as f:
         doc = yaml.full_load(f)
     doc['KEY_GENERATION']['KEY_LENGTH'] = key_length
     doc['KEY_GENERATION']['PRIME_MIN_LENGTH'] = prime_min_length
-    with open('src/configurations.yaml', 'w') as f:
+    with open(os.path.join(os.path.dirname(__file__), "../configurations.yaml"), 'w') as f:
         yaml.dump(doc, f)
 
 def get_stats_iterations_count():
-    with open("src/configurations.yaml", "r") as f:
+    with open(os.path.join(os.path.dirname(__file__), "../configurations.yaml"), "r") as f:
             config = yaml.safe_load(f)
     count = config["STATS_ITERATIONS_COUNT"]
     assert count > 0, "stats iterations count should be >= 1"
@@ -42,7 +45,7 @@ def plot_key_gen_stats(key_generation_time_avg, key_lens):
     ax.set_title("Key Generation Stats")
     ax.set_xlabel("Key length in bits")
     ax.set_ylabel("Time in seconds")
-    plt.savefig('src/stats/key_generation_stats.png', bbox_inches='tight')
+    plt.savefig(os.path.join(os.path.dirname(__file__), "..") + '/stats/key_generation_stats.png', bbox_inches='tight')
     plt.show()
 
 def annotate_msg_size(ax, size, x, y, point_index):
@@ -66,7 +69,7 @@ def plot_ecnryption_stats(encryption_time_avg, key_lens, msg_sizes):
     ax.add_artist(AnchoredText('annotations on points represent message sizes in bits', loc=2))
     for i in range(len(key_lens)):
         annotate_msg_size(ax, msg_sizes[i], key_lens[i], encryption_time_avg[i], i)
-    plt.savefig('src/stats/encryption_stats.png', bbox_inches='tight')
+    plt.savefig(os.path.join(os.path.dirname(__file__), "..") + '/stats/encryption_stats.png', bbox_inches='tight')
     plt.show()
 
 def plot_total_rsa_stats(total_rsa_time_avg, key_lens, msg_sizes):
@@ -80,12 +83,12 @@ def plot_total_rsa_stats(total_rsa_time_avg, key_lens, msg_sizes):
     ax.add_artist(AnchoredText('annotations on points represent message sizes in bits', loc=2))
     for i in range(len(key_lens)):
         annotate_msg_size(ax, msg_sizes[i], key_lens[i], total_rsa_time_avg[i], i)
-    plt.savefig('src/stats/total_rsa_stats.png', bbox_inches='tight')
+    plt.savefig(os.path.join(os.path.dirname(__file__), "..") + '/stats/total_rsa_stats.png', bbox_inches='tight')
     plt.show()
 
-key_len__prime_min_len__msg_len = [(32, 8, 11576), (40, 10, 11576), (56, 15, 11576),
-    (64, 30, 11576), (128, 60, 11576), (256, 120, 11576), 
-    (512, 250, 11576), (1024, 500, 11576), (2048, 1000, 11576)]
+key_len__prime_min_len__msg_len = [(32, 8, 20), (40, 10, 20), (56, 15, 20),
+    (64, 30, 40), (128, 60, 40), (256, 120, 40), 
+    (512, 250, 300), (1024, 500, 300), (2048, 1000, 300)]
 
 def main():
     key_generation_time_avg = [0,0,0,0,0,0,0,0,0]

@@ -1,8 +1,7 @@
-from rsa import encrypt
+import os
 import yaml
 import math
 import socket
-import sys
 from dataclasses import dataclass
 from algorithm.utils import RSAUtils, UserInterfaceUtils
 
@@ -16,7 +15,7 @@ class Params:
 
 class RSA:
     def __init__(self):
-        with open("src\configurations.yaml", "r") as f:
+        with open(os.path.join(os.path.dirname(__file__), "../configurations.yaml"), "r") as f:
             config = yaml.safe_load(f)
         self.key_length = math.floor(config["KEY_GENERATION"]["KEY_LENGTH"])
         self.prime_min_length = math.floor(config["KEY_GENERATION"]["PRIME_MIN_LENGTH"])

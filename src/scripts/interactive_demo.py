@@ -1,6 +1,7 @@
-from email import message
-import sys, getopt
+import sys, os, getopt
 import socket
+
+sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 from algorithm.rsa import RSA
 from algorithm.utils import UserInterfaceUtils
 
