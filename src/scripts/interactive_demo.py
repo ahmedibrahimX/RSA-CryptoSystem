@@ -1,5 +1,7 @@
 import sys, os, getopt
 import socket
+import yaml
+import math
 
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 from algorithm.rsa import RSA
@@ -13,23 +15,27 @@ def print_help_message():
     print("use one of the following options:\n\t-h (for help)\n\t-t sender (to send)\n\t-t receiver (to receive)")
     sys.exit(2)
 
-def execute_sender_behavior():
+def execute_receiver_behavior():
     server = CommunicationUtils.create_server_socket()
-    UserInterfaceUtils.display_waiting_message("Sender")
+    UserInterfaceUtils.display_waiting_message("Receiver")
     connection, _ = server.accept()
     rsa = RSA()
     rsa.generate_key(IS_INTERACTIVE)
     CommunicationUtils.send_pulic_key(connection, rsa)
     while True:
-        message = UserInterfaceUtils.get_message_from_user()
-        CommunicationUtils.send_encrypted_messages(connection, rsa, message)
+        CommunicationUtils.decrypt_received_messages(connection, rsa.params.n, rsa.params.d)
 
-def execute_receiver_behavior():
+def execute_sender_behavior():
+    with open(os.path.join(os.path.dirname(__file__), "../configurations.yaml"), "r") as f:
+            config = yaml.safe_load(f)
+    key_length = math.floor(config["KEY_GENERATION"]["KEY_LENGTH"])
     client = CommunicationUtils.create_client_socket()
-    UserInterfaceUtils.display_waiting_message("Receiver")
-    n, d = CommunicationUtils.receive_public_key(client)
+    UserInterfaceUtils.display_waiting_message("Sender")
+    n, e = CommunicationUtils.receive_public_key(client)
     while True:
-        CommunicationUtils.decrypt_received_messages(client, n, d)
+        message = UserInterfaceUtils.get_message_from_user()
+        CommunicationUtils.send_encrypted_messages(client, e, n, key_length, message)
+    
 
 def main(argv):
     try:
