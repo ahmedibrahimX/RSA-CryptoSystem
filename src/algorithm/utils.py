@@ -59,6 +59,23 @@ class UserInterfaceUtils:
         UserInterfaceUtils.display_horizontal_line()
 
     @staticmethod
+    def display_received_message(message):
+        print("Received message:", message)
+        UserInterfaceUtils.display_horizontal_line()
+
+    @staticmethod
+    def display_instruction():
+        UserInterfaceUtils.display_horizontal_line()
+        print("NOTE: make sure that the receiver is started first as it generates the keys!!")
+        UserInterfaceUtils.display_horizontal_line()
+
+    @staticmethod
+    def display_key_exchange_success():
+        UserInterfaceUtils.display_horizontal_line()
+        print("Keys exchanged successfully")
+        UserInterfaceUtils.display_horizontal_line()
+
+    @staticmethod
     def display_horizontal_line():
         print("="*50)
 

@@ -32,6 +32,7 @@ def execute_sender_behavior():
     client = CommunicationUtils.create_client_socket()
     UserInterfaceUtils.display_waiting_message("Sender")
     n, e = CommunicationUtils.receive_public_key(client)
+    UserInterfaceUtils.display_key_exchange_success()
     while True:
         message = UserInterfaceUtils.get_message_from_user()
         CommunicationUtils.send_encrypted_messages(client, e, n, key_length, message)

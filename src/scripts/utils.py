@@ -20,6 +20,7 @@ class CommunicationUtils:
     
     @staticmethod
     def create_client_socket():
+        UserInterfaceUtils.display_instruction()
         client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         client.connect((CommunicationUtils.HOST, CommunicationUtils.PORT))
         return client
@@ -62,7 +63,7 @@ class CommunicationUtils:
                 decrypted_block = RSA.decrypt_message_block(block, block_size, d, n)
                 message += decrypted_block
                 message_length -= (block_size/8)
-        print(message)
+        UserInterfaceUtils.display_received_message(message)
         return message
     
     @staticmethod
