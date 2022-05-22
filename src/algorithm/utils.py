@@ -40,9 +40,9 @@ class UserInterfaceUtils:
     @staticmethod
     def display_waiting_message(communication_side):
         if communication_side == "Sender":
-            print("Sender listening for connections")
+            print("Sender is waiting for key")
         elif communication_side == "Receiver":
-            print("Receiver is waiting for key")
+            print("Receiver listening for connections")
     
     @staticmethod
     def display_starting_message(key_length):

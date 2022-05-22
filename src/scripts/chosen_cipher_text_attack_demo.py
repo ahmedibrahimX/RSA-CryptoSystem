@@ -1,16 +1,16 @@
 import sys, os
 import random
 import threading
+import math
 from string import ascii_letters, digits
 from time import sleep
 
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 from algorithm.rsa import RSA
-from algorithm.utils import RSAUtils, UserInterfaceUtils
+from algorithm.utils import RSAUtils
 from scripts.utils import CommunicationUtils
 
 IS_NOT_INTERACTIVE = False
-lock = threading.Condition()
 
 def generate_random_message(length_in_bits):
     message = ""
@@ -24,31 +24,53 @@ def execute_legitimate_behavior():
     rsa.generate_key(IS_NOT_INTERACTIVE)
     connection, _ = legitimate_user.accept()
     CommunicationUtils.send_pulic_key(connection, rsa)
-    message1 = generate_random_message(rsa.key_length - 8)
-    CommunicationUtils.send_encrypted_messages(connection, rsa, message1)
-    received_message = int(connection.recv(CommunicationUtils.BUFFER_SIZE).decode("utf8"))
-    received_message_decrypted = pow(received_message, rsa.params.d, rsa.params.n)
-    connection.send(str(received_message_decrypted).encode("utf8"))
+    original_message = generate_random_message((rsa.key_length - 8) * random.choice(range(1, 11)))
+    print("Original message at legitimate user side:\n", original_message)
+    CommunicationUtils.send_encrypted_messages(connection, rsa.params.e, rsa.params.n, rsa.key_length, original_message)
+    received_message = 1
+    CommunicationUtils.resend_back_corrupt_messages(rsa, connection, received_message)
 
+def trick_victim_into_decrypting_chosen_chipertext(attacker, n, e, encrypted_block, r):
+    chosen_ciphertext_block = (encrypted_block * pow(r, e, n)) % n
+    attacker.send(str(chosen_ciphertext_block).encode("utf8"))
+    chosen_chiphertext_block_decrypted = int(attacker.recv(CommunicationUtils.BUFFER_SIZE).decode("utf8"))
+    return chosen_chiphertext_block_decrypted
 
+def extract_original_block(n, inverse_of_random_factor, chosen_chiphertext_block_decrypted):
+    original_block_decrypted_chars = (chosen_chiphertext_block_decrypted * inverse_of_random_factor) % n
+    return original_block_decrypted_chars
+
+def reorder_characters_into_original_format(message_length, encrypted_block_length, original_block_decrypted_chars):
+    original_block_decrypted_str = ""
+    num_processed_bits = 0
+    while num_processed_bits < encrypted_block_length:
+        character = chr(original_block_decrypted_chars & 0xFF)
+        original_block_decrypted_chars = original_block_decrypted_chars >> 8
+        original_block_decrypted_str = character + original_block_decrypted_str
+        num_processed_bits += 8
+        message_length -= 1
+    return original_block_decrypted_str
 
 def execute_attacker_behavior():
     attacker = CommunicationUtils.create_client_socket()
     n, e =CommunicationUtils.receive_public_key(attacker)
-    attacker.recv(CommunicationUtils.BUFFER_SIZE).decode("utf8")
-    message1_tuple = attacker.recv(CommunicationUtils.BUFFER_SIZE).decode("utf8").split("\n")[0:-1]
-    message1_encrypted = int(message1_tuple.split("\t")[0])
-    message1_len = int(message1_tuple.split("\t")[1])
-    r = random.choice(range(2, rsa.n))
-    manipulated_message = (message1_encrypted * pow(r, rsa.params.e, rsa.params.n)) % rsa.params.n
-    attacker.send(str(manipulated_message).encode("utf8"))
-    message2 = int(attacker.recv(CommunicationUtils.BUFFER_SIZE).decode("utf8"))
-    r_inverse = RSAUtils.get_inverse(r, rsa.params.n)
-    message1_decrypted = (message2 * r_inverse) % rsa.params.n
-    message1_str = ""
-    for i in range(message1_len):
-        message1_str = message1_decrypted[i] + message1_str
-    print(message1_str)
+    message_length = int(attacker.recv(CommunicationUtils.BUFFER_SIZE).decode("utf8"))
+    block_tuples = CommunicationUtils.receive_all_blocks_at_once(attacker, message_length)
+    decrypted_message = ""
+    for block_tuple in block_tuples:
+        encrypted_block = int(block_tuple.split("\t")[0])
+        encrypted_block_length = int(block_tuple.split("\t")[1])
+        
+        random_factor = random.choice(range(2, n if n < 100 else 100))
+        inverse_of_random_factor = RSAUtils.get_inverse(random_factor, n)
+        
+        chosen_chiphertext_block_decrypted = trick_victim_into_decrypting_chosen_chipertext(attacker, n, e, encrypted_block, random_factor)
+        original_block_decrypted_chars = extract_original_block(n, inverse_of_random_factor, chosen_chiphertext_block_decrypted)
+        original_block_decrypted_str = reorder_characters_into_original_format(message_length, encrypted_block_length, original_block_decrypted_chars)
+        
+        decrypted_message += original_block_decrypted_str
+    print("Decrypted message at attacker side:\n", decrypted_message)
+    attacker.send(str(0).encode("utf8"))
 
 def main():
     Bob = threading.Thread(target=execute_legitimate_behavior)

@@ -1,5 +1,6 @@
 import sys, os
 import socket
+from time import sleep
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 from algorithm.rsa import RSA
 from algorithm.utils import UserInterfaceUtils
@@ -7,7 +8,7 @@ from algorithm.utils import UserInterfaceUtils
 IS_COMMUNICATION_MODE = True
 
 class CommunicationUtils:
-    BUFFER_SIZE = 50000
+    BUFFER_SIZE = 500000
     HOST = "127.0.0.1"
     PORT = 8000
     @staticmethod
@@ -26,11 +27,13 @@ class CommunicationUtils:
     @staticmethod 
     def send_pulic_key(connection, rsa):
         connection.send(str(rsa.params.n).encode("utf8"))
+        sleep(0.01)
         connection.send(str(rsa.params.e).encode("utf8"))
+        sleep(0.01)
     
     @staticmethod
     def receive_public_key(client):
-        n = int(client.recv(CommunicationUtils.BUFFER_SIZE).decode("utf8"))
+        n = int(client.recv(CommunicationUtils.BUFFER_SIZE).decode("utf8"))        
         e = int(client.recv(CommunicationUtils.BUFFER_SIZE).decode("utf8"))
         return n, e
     
@@ -61,3 +64,21 @@ class CommunicationUtils:
                 message_length -= (block_size/8)
         print(message)
         return message
+    
+    @staticmethod
+    def resend_back_corrupt_messages(rsa, connection, received_message):
+        while received_message != 0:
+            received_message = int(connection.recv(CommunicationUtils.BUFFER_SIZE).decode("utf8"))
+            received_message_decrypted = pow(received_message, rsa.params.d, rsa.params.n)
+            connection.send(str(received_message_decrypted).encode("utf8"))
+
+    @staticmethod
+    def receive_all_blocks_at_once(connection, message_length):
+        block_tuples = []
+        total_received_chars = 0
+        while total_received_chars < message_length:
+            new_tuples = connection.recv(CommunicationUtils.BUFFER_SIZE).decode("utf8").split("\n")[0:-1]
+            for t in new_tuples:
+                total_received_chars += int(t.split("\t")[1]) // 8
+            block_tuples += new_tuples
+        return block_tuples
