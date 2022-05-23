@@ -8,6 +8,7 @@ import datetime
 import yaml
 from progressbar import *
 from string import ascii_letters, digits
+from matplotlib.offsetbox import AnchoredText
 
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 from algorithm.utils import RSAUtils
@@ -86,19 +87,45 @@ def get_attack_iterations_count():
     print("number of iterations is : " + str(count))
     return count
 
-def plot_bruteforce_stats(attack_time_avg, key_lens):
+def plot_bruteforce_stats_vs_keysize(attack_time_avg, key_lens):
     plt.style.use('ggplot')
     fig, ax = plt.subplots()
     plt.grid(True)
     ax.plot(key_lens, attack_time_avg, marker="o", markersize=5)
-    ax.set_title("Bruteforce Stats")
+    ax.set_title("Bruteforce Time vs Key Length Stats")
     ax.set_xlabel("Key length in bits")
     ax.set_ylabel("Time in seconds")
-    plt.savefig(os.path.join(os.path.dirname(__file__), "..") + '/stats/bruteforce_stats/bruteforce_stats.png', bbox_inches='tight')
+    plt.savefig(os.path.join(os.path.dirname(__file__), "..") + '/stats/bruteforce_stats/bruteforce_time_vs_keysize_stats.png', bbox_inches='tight')
+    plt.show()
+
+def annotate_n_value(ax, n, time):
+    ax.annotate(
+    str(n),
+    xy=(n, time), xycoords='data',
+    xytext=(5, 0), textcoords='offset points',
+    size=7,
+    bbox=dict(boxstyle="round4,pad=.5", fc="0.8", alpha=0.4),
+    arrowprops=dict(arrowstyle="-"))
+
+def plot_bruteforce_stats_vs_n_value(n_vs_time):
+    plt.style.use('ggplot')
+    fig, ax = plt.subplots()
+    plt.grid(True)
+    n_vals = [coord[0] for coord in n_vs_time]
+    time = [coord[1] for coord in n_vs_time]
+    ax.scatter(n_vals, time, marker="o")
+    for coord in n_vs_time:
+        annotate_n_value(ax, coord[0], coord[1])
+    ax.set_title("Bruteforce Time vs n Value Stats")
+    ax.set_xlabel("n value")
+    ax.set_ylabel("Time in seconds")
+    ax.add_artist(AnchoredText('annotations on points represent n values', loc=2))
+    plt.savefig(os.path.join(os.path.dirname(__file__), "..") + '/stats/bruteforce_stats/bruteforce_time_vs_nvalue_stats.png', bbox_inches='tight')
     plt.show()
 
 def main():
     key_len__prime_min_len = [(8, 2), (16, 7), (32, 15), (40, 19)]
+    n_vs_time = []
     attack_time_avg = [0,0,0,0]
 
     iterations_count = int(get_attack_iterations_count())
@@ -127,10 +154,12 @@ def main():
             assert decrypted_message == original_message, "decryption doesn't match original message"
 
             attack_time_avg[test_case_num] += (attack_finish - attack_start).total_seconds() / float(iterations_count)
+            n_vs_time.append((rsa.params.n, (attack_finish - attack_start).total_seconds()))
             test_case_num += 1
     print(attack_time_avg)
     key_lens = [config[KEY_CONFIG] for config in key_len__prime_min_len]
-    plot_bruteforce_stats(attack_time_avg, key_lens)
+    plot_bruteforce_stats_vs_keysize(attack_time_avg, key_lens)
+    plot_bruteforce_stats_vs_n_value(n_vs_time)
 
 
 if __name__ == "__main__":
