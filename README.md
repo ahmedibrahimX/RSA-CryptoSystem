@@ -12,7 +12,18 @@
 
 ***
 
-## How to run
+## How to Run
+
+> *****
+>
+> **DISCLAIMER:**
+>
+> - I run my scripts from the powershell terminal in VSCode, please use the same terminal to replicate my results as the CLI library (called "inquirer") that I used might have some glitches with other terminals
+> - When entering messages in the sender terminal please don't press other buttons other than the `letters` buttons, the `backspace` button and the `enter` button because the library gives an exception if another letter is pressed
+>
+> 
+
+***
 
 1. Install the required packages using the following command: `pip install -r .\requirements.txt`
 
@@ -72,6 +83,89 @@
      - This demo is not interactive and you don't need to do any configurations since the script tries different key lengths to show meaningful statistics for the speed of bruteforce attack (factorizing `n` using bruteforce over the value of `p`).
      - You only need to run the command `python .\bruteforce_demo.py`
      - The output will be graphs showing statistics and they will be saved in `src\stats\bruteforce_stats` directory
+
+***
+
+## RSA Implementation
+
+### Key Generation
+
+- Configurable parameters (all in `src\configurations.yaml` ):
+
+  - key length (`n`) in bits
+  - min prime length in bits (lower limit for `p` and `q`)
+  - `e` max length in bits
+  - `e` max options count (to choose from in manual choice mode for `e` value in interactive demo)
+  - first/second/third sample size (to choose from in manual choice mode for `p` and `q` prime values in interactive demo)
+
+- Generating prime numbers
+
+  - First trial
+
+    - I first tried a method called [Sieve of Eratosthenes](https://en.wikipedia.org/wiki/Sieve_of_Eratosthenes)
+    - This method is used to generate all primes up to a certain number, it is a deterministic method but it's an O(n log(log n)) algorithm and the best complexity it can reach is O(n) with some modifications of the classical algorithm which is still not desirable for large values as in our case
+
+  - Second trial (the currently used one)
+
+    - I tried a randomized method inspired by Monte-Carlo. Which is to randomly choose a number of values from a certain range
+
+    - I adapted it to be suitable for generating our `p` and `q`, so instead of just choosing a number of values from a certain range, I made sure that the chosen values are primes as follows
+
+      - To speed up the process I stored the prime values between 2-349 so if the range I want overlaps with these values I directly add these values to my prime set to avoid unnecessary computations
+
+      - Then I start to randomly choose values within the required range and for each value I run 2 checks before I accept it as a prime and add it to my set. The 2 checks are
+
+        - A simple check: *make sure that this candidate is not divisible by any of the set of the primes between 2-349*
+
+        - A Miller-Rabin check: *make sure that there is no factor (< this candidate) where the following formula holds:*
+
+          <img src="https://latex.codecogs.com/svg.image?base^{\&space;factor\&space;*\&space;2^i}=-1\&space;mod\&space;prime\&space;candidate">
+
+          *`i` takes values between 0 and the number of factorization trials which is determined by the number of required shifts to make the prime candidate an even number, and `base` is a random number between 2 and the prime candidate*
+
+    - Then I choose a value for the `p` and a value for `q` where the length their product is within the key length
+
+  * Differences between modes
+    * In random generation mode, I generate my prime candidates from the range with length around the half the max key length to ensure that `p` and `q` will be large yet will differ in length by only a few number of bits to make it difficult to bruteforce
+    * In manual choice mode, I generate prime candidates from the whole range, but I sample a number of prime numbers from each range with the upper limit configured for each range in the `src\configurations.yaml` file. And I provide the user with these sampled prime candidates as a list of valid options to choose from
+
+- `n` (public key) is calculated as the product of `p` and `q` as instructed by the RSA algorithm
+
+- `phi` is calculated as the product of `p-1` and `q-1` as instructed by the RSA algorithm
+
+- Choosing `e` (public key)
+
+  - To get valid values for `e` I generate random values (modified approach inspired by Monte-Carlo) between 2 and phi (or the upper limit for `e` determined from the max length of `e` configured in the `src\configurations.yaml` file), then I run the Euclidean algorithm on each candidate value to ensure that it is coprime with `phi`
+  - Difference between modes
+    - In random generation mode, I generate one valid value for `e` and accept it as my public key value for `e`
+    - In manual choice mode, I generate different candidates for `e` until I reach the number of choices configured by the user for `e` in the `src\configurations.yaml` file
+
+- `d` is calculated as the inverse of `e` mod `phi`, this is calculated using the extended Euclidean algorithm
+
+### Encrypted Communication
+
+1. The receiver generates the key-pair and sends the public key (`e` and `n`) to the sender
+2. The sender divides the message into blocks < size of key
+3. The sender encrypts each block by raising the numeric value representing the plaintext block to the power of `e` mod `n`
+4. The sender concatenates the encrypted block with its size and sends over socket communication
+5. The receiver does the decryption by raising the numeric value representing the encrypted block to the power of `d` mod `n`
+6. This operation is done until all blocks are encrypted and sent by the sender party and all are received, decrypted and put again in the original form at the receiver
+
+### Test Cases
+
+> My implementation allows sending any alphanumeric (not only numbers) text of any size over an RSA-encrypted socket communication
+
+To test my implementation of RSA:
+
+1. Run the interactive demo as instructed [above](#How-to-Run)
+2. Send messages with the following criteria from the sender terminal and ensure that they are received and decrypted correctly at the receiver and the original messages are displayed at the receiver terminal
+   - A message consisting of numbers only
+   - A message consisting of letters only
+   - A message consisting of numbers and letters but starts with a letter
+   - A message consisting of numbers and letters but starts with a number
+   - A message consisting of a single letter
+   - A message consisting of a single number
+   - An empty message to close the communication successfully
 
 ***
 

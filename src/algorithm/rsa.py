@@ -32,14 +32,14 @@ class RSA:
         UserInterfaceUtils.display_starting_message(self.key_length)
     
     def generate_key(self, isInteractive: bool):
-        smallest_prime = 2 ** (self.prime_min_length - 1)
+        lower_prime_value_boundary = 2 ** (self.prime_min_length - 1)
         p_max = (2 ** self.prime_max_length) - 1
         method = "Randomly" if not isInteractive else UserInterfaceUtils.get_selection_mode("p & q")
         if method == "Randomly":
             p, q = RSAUtils.get_random_p_q(self.key_length)
         else:
-            prime_candidates = RSAUtils.get_prime_candidates(self.key_length, smallest_prime, p_max, self.first_sample_max_size, self.middle_sample_max_size, self.third_sample_max_size)
-            p, q = RSAUtils.get_p_q_from_user(self.key_length, smallest_prime, prime_candidates, self.first_sample_max_size, self.middle_sample_max_size, self.third_sample_max_size)
+            prime_candidates = RSAUtils.get_prime_candidates(self.key_length, lower_prime_value_boundary, p_max, self.first_sample_max_size, self.middle_sample_max_size, self.third_sample_max_size)
+            p, q = RSAUtils.get_p_q_from_user(self.key_length, lower_prime_value_boundary, prime_candidates, self.first_sample_max_size, self.middle_sample_max_size, self.third_sample_max_size)
         assert(p != q)
         n = p * q
         phi = (p - 1) * (q - 1)

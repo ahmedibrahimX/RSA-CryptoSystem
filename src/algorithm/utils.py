@@ -172,15 +172,15 @@ class RSAUtils:
         return prime_candidates
 
     @staticmethod
-    def get_p_q_from_user(key_length, smallest_prime, prime_candidates, first_sample_size, middle_sample_size, third_sample_size):
+    def get_p_q_from_user(key_length, lower_prime_value_boundary, prime_candidates, first_sample_size, middle_sample_size, third_sample_size):
         p =  UserInterfaceUtils.get_value_from_user("p", prime_candidates)
         q_max = RSAUtils.get_2nd_prime_max(key_length, prime_candidates, p)
         q_candidates = []
         q_candidates = np.asarray(prime_candidates, dtype=object)
-        q_candidates = list(q_candidates[((q_candidates != p) & (q_candidates >= smallest_prime) & (q_candidates <= q_max))])
+        q_candidates = list(q_candidates[((q_candidates != p) & (q_candidates >= lower_prime_value_boundary) & (q_candidates <= q_max))])
         assert(set(q_candidates).issubset(prime_candidates))
         if len(q_candidates) == 0 :
-            q_candidates = RSAUtils.get_prime_candidates(key_length, smallest_prime, q_max, first_sample_size, middle_sample_size, third_sample_size)
+            q_candidates = RSAUtils.get_prime_candidates(key_length, lower_prime_value_boundary, q_max, first_sample_size, middle_sample_size, third_sample_size)
         q =  UserInterfaceUtils.get_value_from_user("q", q_candidates)
         return p,q
     
