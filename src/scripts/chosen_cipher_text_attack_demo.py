@@ -25,7 +25,7 @@ def execute_legitimate_behavior():
     connection, _ = legitimate_user.accept()
     CommunicationUtils.send_public_key(connection, rsa)
     original_message = generate_random_message((rsa.key_length - 8) * random.choice(range(1, 11)))
-    print("Original message at legitimate user side:\n", original_message)
+    print("Original message at legitimate user side:\n", original_message, "\n")
     CommunicationUtils.send_encrypted_messages(connection, rsa.params.e, rsa.params.n, rsa.key_length, original_message)
     CommunicationUtils.resend_back_corrupt_messages(rsa, connection)
 
@@ -68,7 +68,7 @@ def execute_attacker_behavior():
         original_block_decrypted_str = reorder_characters_into_original_format(message_length, encrypted_block_length, original_block_decrypted_chars)
         
         decrypted_message += original_block_decrypted_str
-    print("Decrypted message at attacker side:\n", decrypted_message)
+    print("Decrypted message at attacker side:\n", decrypted_message, "\n")
     attacker.send(str(0).encode("utf8"))
 
 def main():
