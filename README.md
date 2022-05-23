@@ -35,6 +35,8 @@
 
      1. Inside `src` directory there is a `configurations.yaml` file where you can configure the key length (i.e. length of n) and the min length of the prime factors (to ensure a certain level of security). There are other configurations in this file that will change how the algorithm operates but you can leave them with the default values.
 
+        - *Make sure that the min prime length is a value less that half the key length you specified*
+
      2. Inside `src\scripts` and run the command: `python .\interactive_demo.py -h` This will show you how to run the script to act as "receiver" or as a "sender". Run each one of them in a different terminal.
 
         - *Please run the "receiver" first as it is the party that generates the RSA key-pair and sends the public one to the "sender" to start the encrypted communication, so it uses the socket that needs to be created first so that the sender socket can connect to it*
@@ -157,14 +159,14 @@
 
 To test my implementation of RSA:
 
-1. Run the interactive demo as instructed [above](#How-to-Run)
+1. Run the interactive demo as instructed [above](#How-to-Run) with any key length of your choice
 2. Send messages with the following criteria from the sender terminal and ensure that they are received and decrypted correctly at the receiver and the original messages are displayed at the receiver terminal
-   - A message consisting of numbers only
-   - A message consisting of letters only
-   - A message consisting of numbers and letters but starts with a letter
-   - A message consisting of numbers and letters but starts with a number
-   - A message consisting of a single letter
-   - A message consisting of a single number
+   - A message consisting of numbers only: `2352022`
+   - A message consisting of letters only: `Ahmed Ibrahim`
+   - A message consisting of numbers and letters but starts with a letter: `CMPN426`
+   - A message consisting of numbers and letters but starts with a number: `23 of May`
+   - A message consisting of a single letter: `a`
+   - A message consisting of a single number: `0`
    - An empty message to close the communication successfully
 
 ***
