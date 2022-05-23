@@ -27,8 +27,7 @@ def execute_legitimate_behavior():
     original_message = generate_random_message((rsa.key_length - 8) * random.choice(range(1, 11)))
     print("Original message at legitimate user side:\n", original_message)
     CommunicationUtils.send_encrypted_messages(connection, rsa.params.e, rsa.params.n, rsa.key_length, original_message)
-    received_message = 1
-    CommunicationUtils.resend_back_corrupt_messages(rsa, connection, received_message)
+    CommunicationUtils.resend_back_corrupt_messages(rsa, connection)
 
 def trick_victim_into_decrypting_chosen_chipertext(attacker, n, e, encrypted_block, r):
     chosen_ciphertext_block = (encrypted_block * pow(r, e, n)) % n

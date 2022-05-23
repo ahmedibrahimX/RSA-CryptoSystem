@@ -67,7 +67,8 @@ class CommunicationUtils:
         return message
     
     @staticmethod
-    def resend_back_corrupt_messages(rsa, connection, received_message):
+    def resend_back_corrupt_messages(rsa, connection):
+        received_message = 1
         while received_message != 0:
             received_message = int(connection.recv(CommunicationUtils.BUFFER_SIZE).decode("utf8"))
             received_message_decrypted = pow(received_message, rsa.params.d, rsa.params.n)
