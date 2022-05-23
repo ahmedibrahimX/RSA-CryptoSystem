@@ -20,7 +20,7 @@ class UserInterfaceUtils:
     def get_value_from_user(parameter, parameter_space):
         options = [
                 inquirer.List("parameter",
-                                message="Select an option for " + parameter + " :",
+                                message="Select an option for " + parameter,
                                 choices=parameter_space,
                     ),
             ]
@@ -70,9 +70,14 @@ class UserInterfaceUtils:
         UserInterfaceUtils.display_horizontal_line()
 
     @staticmethod
-    def display_key_exchange_success():
+    def display_key_receiving_success():
         UserInterfaceUtils.display_horizontal_line()
-        print("Keys exchanged successfully")
+        print("Keys received successfully!!")
+        UserInterfaceUtils.display_horizontal_line()
+
+    @staticmethod
+    def display_key_sending_success():
+        print("Keys sent successfully!! Waiting for messages:")
         UserInterfaceUtils.display_horizontal_line()
 
     @staticmethod
@@ -175,7 +180,6 @@ class RSAUtils:
         q_candidates = list(q_candidates[((q_candidates != p) & (q_candidates >= smallest_prime) & (q_candidates <= q_max))])
         assert(set(q_candidates).issubset(prime_candidates))
         if len(q_candidates) == 0 :
-            print("regenerating")
             q_candidates = RSAUtils.get_prime_candidates(key_length, smallest_prime, q_max, first_sample_size, middle_sample_size, third_sample_size)
         q =  UserInterfaceUtils.get_value_from_user("q", q_candidates)
         return p,q

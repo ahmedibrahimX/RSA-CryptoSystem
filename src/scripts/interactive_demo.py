@@ -22,6 +22,7 @@ def execute_receiver_behavior():
     rsa = RSA()
     rsa.generate_key(IS_INTERACTIVE)
     CommunicationUtils.send_public_key(connection, rsa)
+    UserInterfaceUtils.display_key_sending_success()
     while True:
         CommunicationUtils.decrypt_received_messages(connection, rsa.params.n, rsa.params.d)
 
@@ -32,7 +33,7 @@ def execute_sender_behavior():
     client = CommunicationUtils.create_client_socket()
     UserInterfaceUtils.display_waiting_message("Sender")
     n, e = CommunicationUtils.receive_public_key(client)
-    UserInterfaceUtils.display_key_exchange_success()
+    UserInterfaceUtils.display_key_receiving_success()
     while True:
         message = UserInterfaceUtils.get_message_from_user()
         CommunicationUtils.send_encrypted_messages(client, e, n, key_length, message)
