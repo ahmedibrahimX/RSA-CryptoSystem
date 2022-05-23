@@ -26,7 +26,7 @@ class CommunicationUtils:
         return client
     
     @staticmethod 
-    def send_pulic_key(connection, rsa):
+    def send_public_key(connection, rsa):
         connection.send(str(rsa.params.n).encode("utf8"))
         sleep(0.01)
         connection.send(str(rsa.params.e).encode("utf8"))

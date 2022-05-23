@@ -21,7 +21,7 @@ def execute_receiver_behavior():
     connection, _ = server.accept()
     rsa = RSA()
     rsa.generate_key(IS_INTERACTIVE)
-    CommunicationUtils.send_pulic_key(connection, rsa)
+    CommunicationUtils.send_public_key(connection, rsa)
     while True:
         CommunicationUtils.decrypt_received_messages(connection, rsa.params.n, rsa.params.d)
 

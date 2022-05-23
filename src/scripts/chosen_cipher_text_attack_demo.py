@@ -23,7 +23,7 @@ def execute_legitimate_behavior():
     rsa = RSA()
     rsa.generate_key(IS_NOT_INTERACTIVE)
     connection, _ = legitimate_user.accept()
-    CommunicationUtils.send_pulic_key(connection, rsa)
+    CommunicationUtils.send_public_key(connection, rsa)
     original_message = generate_random_message((rsa.key_length - 8) * random.choice(range(1, 11)))
     print("Original message at legitimate user side:\n", original_message)
     CommunicationUtils.send_encrypted_messages(connection, rsa.params.e, rsa.params.n, rsa.key_length, original_message)
