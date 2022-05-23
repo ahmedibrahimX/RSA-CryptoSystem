@@ -125,6 +125,8 @@
 
           *`i` takes values between 0 and the number of factorization trials which is determined by the number of required shifts to make the prime candidate an even number, and `base` is a random number between 2 and the prime candidate*
 
+          * *Note that miller-rabin is also a Monte-Carlo algorithm*
+
     - Then I choose a value for the `p` and a value for `q` where the length their product is within the key length
 
   * Differences between modes
@@ -168,6 +170,109 @@ To test my implementation of RSA:
    - A message consisting of a single letter: `a`
    - A message consisting of a single number: `0`
    - An empty message to close the communication successfully
+
+***
+
+## Bruteforce Attack
+
+### Factorizing `n`:
+
+- Since `n` is a product of 2 prime numbers, so according to the prime factorization theorem, `n` will not have other factors other than these 2 primes in addition to `n` itself and `1`
+- So a bruteforce search for a factor of `n` (i.e. a number that divides `n`) will give me one of the prime factors, let it be `p` and thus `q` is calculated by dividing `n` by `p`
+
+### Multiprocessing:
+
+- Since one of the prime factors must be smaller than the root of `n` thus I will bruteforce the values within this limit
+- And I improved this search by exploiting the fact that `p` and `q` are randomly chosen, thus dividing the search space into ranges and running a bruteforce process on each range in parallel will increase the probability that I will hit one of the factors of `n`
+- When one process finds a factor, I set an event to kill the rest of the processes and use the found value to calculate the other factor just as mentioned above
+
+### Deriving `d`:
+
+- After finding both `p` and `q` , I calculate `phi`
+- Then `d` is the inverse of `e` mod `phi` calculated using extended Euclidean algorithm
+- `d` can be used to crack the encrypted message I have
+
+***
+
+## Chosen Ciphertext Attack
+
+> I implemented a chosen ciphertext attack where the attacker can decrypt any message without learning the key regardless its size.
+
+### Scenario
+
+- A legitimate user "Bob" sends a message that is intercepted by an attacker "Eve"
+- Eve manipulates the message by multiplying it by a random number `r` raised to the power of `e` mod `n` (these are public values that are within the access of anybody including the attacker)
+- Now Eve can use this manipulated message as a chosen ciphertext and send it to Bob
+- Bob decrypts the message, but from Bob's perspective the message is corrupt (the multiplication that Eve performed has changed the message and made it unintelligible), let that Bob uses a protocol that returns back corrupt messages (without encrypting it again, as it's no use to encrypt a corrupt message) to the one who sent it (to request re-transmission for example)
+- Eve will calculate the inverse of `r` mod `n` using extended Euclidean algorithm and multiply the message returned from Bob with the inverse of `r` to retrieve the original message without the need of learning the key and regardless its size
+
+### Mathematical Reason
+
+- The manipulation Eve has performed by multiplying the encrypted message it intercepted by a random number `r` raised to the power of `e` mod `n`, is equivalent to multiplying the original message with `r` before encryption, since both are raised to the power of `e`
+
+  <img src="https://latex.codecogs.com/svg.image?(m^{e}\&space;mod(n))\&space;*\&space;(r^{e}\&space;mod(n))=({(m*r)}^{e}\&space;mod(n))">
+  - That's why multiplying the decryption of the manipulated message with the inverse of `r` will give you the original message in plaintext form
+
+***
+
+## Statistics and Conclusions
+
+### Performance
+
+> The following results represent the execution time of key generation, encryption and (key generation + encryption together) averaged over 100 iterations.
+
+- Graphs for message size that doesn't exceed one block (relative to the key size)
+
+  <img src=".\src\stats\rsa_stats\different_message_sizes\key_generation_stats.png"/>
+
+  <img src=".\src\stats\rsa_stats\different_message_sizes\encryption_stats.png"/>
+
+  <img src=".\src\stats\rsa_stats\different_message_sizes\total_rsa_stats.png"/>
+
+* Graphs for a constant message size that exceeds one block
+
+  <img src=".\src\stats\rsa_stats\large_message\key_generation_stats.png"/>
+
+  <img src=".\src\stats\rsa_stats\large_message\encryption_stats.png"/>
+
+  <img src=".\src\stats\rsa_stats\large_message\total_rsa_stats.png"/>
+
+#### Conclusion
+
+- The increase in the time of key generation with the increase in the key size is expected to happen, however the random approaches I used in my implementation inspired by Monte-Carlo increased the average speed of Key Generation for all key sizes even large ones
+  - For example generating an RSA key with a length of 1024 bit (which is considered a secure key length that would require years to be cracked) is generated in less than a second
+  - Even generating an RSA key with a length of 2048 bit would be done within 2 seconds
+  - This is the average case, there are at least 50% percent that you get your key in a time less than that
+- Implementing my encryption in the form of blocks with the key size as the upper limit, and creating each block in an efficient way makes encrypting any message regardless its size, I tried a message size equivalent to the size of a paragraph from Wikipedia (11576 bits) and it was encrypted in a time less than hundredth of a second for key sizes up to 1024 bits and within a tenth of a second for a key size of 2048 bits
+- Practically this makes the communication very fast as the third graph shown above represents both the encryption + the overhead of the key generation (which is still fast), but in practice, key generation is done once at the beginning of communication, then we communicate using this key, so practically the speed of the communication will be that of the encryption which is on average less than a tenth of a second
+
+### Bruteforce (Searching for prime factors of `n`)
+
+> The following results represent the execution time vs key size and vs value of `n` , averaged over 10 iterations
+
+<img src=".\src\stats\bruteforce_stats\bruteforce_time_vs_keysize_stats.png"/>
+
+<img src=".\src\stats\bruteforce_stats\bruteforce_time_vs_nvalue_stats.png"/>
+
+- Bruteforce is expected to increase dramatically with the increase in the key size, however the multiprocessing approach I used increases the probability of finding one of the factors early and this speeds up the bruteforce search
+  - This optimization is very clear in finding the factor of this `n` with the value of 1000961693933 (in decimal) faster than ones smaller than it, so there's a good probability that my implementation will find one of the prime factors in a relatively short time even if the n is large
+- But I do *not* consider bruteforce as an effective way against RSA especially in large (realistic) key sizes.
+  - For example, 56-bit key was estimated by my code to take a couple of hours to be cracked. It is a feasible to be cracked by an attacker but wouldn't be practical for my project statistics as I run the script that calculates the statistics for 10 iterations so it is not included in the graph.
+  - 64-bit key was estimated by my code to take 2 days and a half to be cracked which is feasible to be cracked by an attacker, but it is not included in the graph for the same reason mentioned above
+  - But larger keys such as 1024 bit and 2048 bit keys would require years to be cracked, so it is computationally infeasible to crack the key before the lifetime of the information and even if we want to speed up the process it would require renting computers with multiple cores over the cloud to crack a single RSA key which might cost more than the value of the information and still would exceed the lifetime of the information.
+    - Thus we can consider RSA computationally secure against bruteforce attack
+
+### Chosen Ciphertext Attack
+
+* In my opinion this attack is a creative attack that uses the mathematical properties of the modular arithmetic to find a smart work-around to decrypt the message without learning the private key.
+* So this attack can be considered a possible *Directed Chosen Message Attack* against RSA
+* But it requires a protocol that resends the corrupt (manipulated) messages back to the attacker which I doubt that it is not prevented by practical network protocols used in reality
+
+### General Comments
+
+> I believe that RSA is a strong algorithm that if implemented properly it can achieve high security and performance
+> Randomized algorithms and multithreading can help a lot in optimizing the execution time and speeding up the required operations to generate the keys.
+> Also the computations required to encrypt and decrypt the message are not time consuming so by representing your messages in an efficient form would speed up the encryption and decryption operations a lot.
 
 ***
 
