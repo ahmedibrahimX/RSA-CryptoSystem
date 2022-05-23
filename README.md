@@ -223,19 +223,19 @@ To test my implementation of RSA:
 
 - Graphs for message size that doesn't exceed one block (relative to the key size)
 
-  <img src=".\src\stats\rsa_stats\different_message_sizes\key_generation_stats.png"/>
+  <img src=".\docs\rsa_stats\different_message_sizes\key_generation_stats.png"/>
 
-  <img src=".\src\stats\rsa_stats\different_message_sizes\encryption_stats.png"/>
+  <img src=".\docs\rsa_stats\different_message_sizes\encryption_stats.png"/>
 
-  <img src=".\src\stats\rsa_stats\different_message_sizes\total_rsa_stats.png"/>
+  <img src=".\docs\rsa_stats\different_message_sizes\total_rsa_stats.png"/>
 
 * Graphs for a constant message size that exceeds one block
 
-  <img src=".\src\stats\rsa_stats\large_message\key_generation_stats.png"/>
+  <img src=".\docs\rsa_stats\large_message\key_generation_stats.png"/>
 
-  <img src=".\src\stats\rsa_stats\large_message\encryption_stats.png"/>
+  <img src=".\docs\rsa_stats\large_message\encryption_stats.png"/>
 
-  <img src=".\src\stats\rsa_stats\large_message\total_rsa_stats.png"/>
+  <img src=".\docs\rsa_stats\large_message\total_rsa_stats.png"/>
 
 #### Conclusion
 
@@ -250,9 +250,9 @@ To test my implementation of RSA:
 
 > The following results represent the execution time vs key size and vs value of `n` , averaged over 10 iterations
 
-<img src=".\src\stats\bruteforce_stats\bruteforce_time_vs_keysize_stats.png"/>
+<img src=".\docs\bruteforce_stats\bruteforce_time_vs_keysize_stats.png"/>
 
-<img src=".\src\stats\bruteforce_stats\bruteforce_time_vs_nvalue_stats.png"/>
+<img src=".\docs\bruteforce_stats\bruteforce_time_vs_nvalue_stats.png"/>
 
 - Bruteforce is expected to increase dramatically with the increase in the key size, however the multiprocessing approach I used increases the probability of finding one of the factors early and this speeds up the bruteforce search
   - This optimization is very clear in finding the factor of this `n` with the value of 1000961693933 (in decimal) faster than ones smaller than it, so there's a good probability that my implementation will find one of the prime factors in a relatively short time even if the n is large
