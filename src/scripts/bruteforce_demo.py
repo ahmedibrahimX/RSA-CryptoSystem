@@ -27,6 +27,7 @@ def search_for_prime_factor(start, end, n, factors_found, p_q):
     p = start
     while p <= end and p * p < n and factors_found.is_set() == False:
         # if RSAUtils.is_probably_a_prime(p) and RSAUtils.is_miller_rabin_strong_prime(p) and n % p == 0:
+        #NOTE: No need to check if it's a prime or not as n will only have 2 factors which are p and q (based on prime factorization theorem)
         if n % p == 0:
             q = n // p
             p_q["values"] = (p, q)
