@@ -19,7 +19,7 @@
 > **DISCLAIMER:**
 >
 > - I run my scripts from the powershell terminal in VSCode, please use the same terminal to replicate my results as the CLI library (called "inquirer") that I used might have some glitches with other terminals
-> - When entering messages in the sender terminal please don't press other buttons other than the `letters` buttons, the `backspace` button and the `enter` button because the library gives an exception if another letter is pressed
+> - When entering messages in the sender terminal please don't press other buttons other than the `letters`, `numbers`, `backspace`, `shift`, `caps` and `enter` buttons because the library gives an exception if another letter is pressed. However, this doesn't affect your interactive experience since the messages are expected to be alphanumeric
 >
 > 
 
