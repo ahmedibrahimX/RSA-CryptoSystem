@@ -149,7 +149,7 @@ class RSAUtils:
                 prime_candidate) == 1:
                 return False
             for i in range(num_factorization_trials):
-                # check if base ^ (factor * (2^i)) = -1 mode prime_candidate
+                # check if base ^ (factor * (2^i)) = -1 mod prime_candidate
                 if pow(base, 2**i * factor, prime_candidate) == prime_candidate-1:
                     return False
             return True

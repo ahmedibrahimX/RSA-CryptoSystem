@@ -211,6 +211,7 @@ To test my implementation of RSA:
 - The manipulation Eve has performed by multiplying the encrypted message it intercepted by a random number `r` raised to the power of `e` mod `n`, is equivalent to multiplying the original message with `r` before encryption, since both are raised to the power of `e`
 
   <img src="https://latex.codecogs.com/svg.image?(m^{e}\&space;mod(n))\&space;*\&space;(r^{e}\&space;mod(n))=({(m*r)}^{e}\&space;mod(n))">
+  
   - That's why multiplying the decryption of the manipulated message with the inverse of `r` will give you the original message in plaintext form
 
 ***
@@ -253,6 +254,8 @@ To test my implementation of RSA:
 <img src=".\docs\bruteforce_stats\bruteforce_time_vs_keysize_stats.png"/>
 
 <img src=".\docs\bruteforce_stats\bruteforce_time_vs_nvalue_stats.png"/>
+
+#### Conclusion
 
 - Bruteforce is expected to increase dramatically with the increase in the key size, however the multiprocessing approach I used increases the probability of finding one of the factors early and this speeds up the bruteforce search
   - This optimization is very clear in finding the factor of this `n` with the value of 1000961693933 (in decimal) faster than ones smaller than it, so there's a good probability that my implementation will find one of the prime factors in a relatively short time even if the n is large
