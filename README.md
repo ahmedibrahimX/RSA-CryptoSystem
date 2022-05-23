@@ -4,7 +4,7 @@
 >
 > The project is focused on implementing [RSA](https://en.wikipedia.org/wiki/RSA_(cryptosystem)) and its possible attacks
 
-**Used Language:** <img alt="Python" src="https://img.shields.io/badge/python-%2314354C.svg?style=for-the-badge&logo=python&logoColor=white"/>
+**Used Language:** ![Python](https://img.shields.io/badge/python-%2314354C.svg?style=for-the-badge&logo=python&logoColor=white)
 
 ***
 
