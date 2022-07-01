@@ -206,6 +206,10 @@ To test my implementation of RSA:
 - Bob decrypts the message, but from Bob's perspective the message is corrupt (the multiplication that Eve performed has changed the message and made it unintelligible), let that Bob uses a protocol that returns back corrupt messages (without encrypting it again, as it's no use to encrypt a corrupt message) to the one who sent it (to request re-transmission for example)
 - Eve will calculate the inverse of `r` mod `n` using extended Euclidean algorithm and multiply the message returned from Bob with the inverse of `r` to retrieve the original message without the need of learning the key and regardless its size
 
+### Note
+
+* In a real situation, the encrypted messages (ciphertexts) will be sent by another user, and they get intercepted by Eve to be manipulated before it sends it to Bob. However in the scope of this project, it was declared by the TAs to be sufficient just to make Bob generate the ciphertext and send it to Eve instead of creating another socket and simulating the message interception. The focus in the project was to explore the mathematical attack and not to simulate the interception of messages on the network.
+
 ### Mathematical Reason
 
 - The manipulation Eve has performed by multiplying the encrypted message it intercepted by a random number `r` raised to the power of `e` mod `n`, is equivalent to multiplying the original message with `r` before encryption, since both are raised to the power of `e`
